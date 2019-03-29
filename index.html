@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Programming is for Squares</title>
+    <style>
+      body {
+        height: 100vh;
+        width: 100vw;
+        margin: 0;
+        font-family: Sans-serif;
+        background-color: black;
+      }
+      #game {
+        position: relative;
+        background-color: #314159;
+        float: left;
+      }
+      #get-started {
+        color: white;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 30px;
+      }
+      #controls {
+        background-color: #dddddd;
+        float: left;
+      }
+      #buttons, #share, #examples {
+        padding: 10px;
+        text-align: center;
+        display: inline-block;
+      }
+      #share-input {
+        width: 100%;
+        height: 100px;
+      }
+      .object .text {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .delete {
+        text-align: center;
+        font-family: Sans-serif;
+        height: 25px;
+        width: 25px;
+        line-height: 27px;
+        border-radius: 12px;
+        border: 1px solid white;
+        background-color: black;
+        color: white;
+        font-weight: bold;
+        position: absolute;
+        top: -15px;
+        right: -15px;
+      }
+      .editing textarea {
+        position: relative;
+        font-family: monospace;
+        height: 500px;
+        width: 500px;
+        margin: 10px;
+        box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        border: 4px solid green;
+      }
+      button {
+        font-size: 20px;
+        border: none;
+        background-color: orange;
+        padding: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game">
+      <div id="get-started">
+        To get started, click anywhere
+      </div>
+    </div>
+    <div id="controls">
+      <div id="buttons">
+        <h2>Controls</h2>
+        <button id="start">START</button>
+        <button id="stop">STOP</button>
+        <button id="reset">RESET</button>
+      </div>
+      <div id="examples">
+        <h2>Examples</h2>
+        <a id="multiplier-example" href="javascript:void(0)">Multiplier</a>
+        <br />
+        <a id="pong-example" href="javascript:void(0)">Pong</a>
+        <br />
+        <a id="vibrate-example" href="javascript:void(0)">Vibrate</a>
+      </div>
+      <div id="share">
+        <h2>Import/Export</h2>
+        <button id="save">SAVE</button>
+        <button id="load">LOAD</button>
+        <textarea id="share-input"></textarea>
+      </div>
+    </div>
+    <script src="http://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script>
+      const multiplyExample = `["object.color = 'green'\\nobject.x = 100\\nobject.y = 100\\nobject.speedX = 1 * Math.sign(Math.random() - .5)\\nobject.speedY = 1 * Math.sign(Math.random() - .5)\\nobject.height = 30\\nobject.width = 30\\nobject.tillDivide = 200\\n\\nobject.onTick = function onTick (object) {\\n  if (object.x < 0) object.speedX = 1\\n  if (object.x > 1000) object.speedX = -1\\n  if (object.y < 0) object.speedY = 1\\n  if (object.y > 1000) object.speedY = -1\\n  object.tillDivide -= 1\\n  if (object.tillDivide <= 0 && objects.length < 100) {\\n    object.tillDivide = 100\\n    const divide = createObject(object.init)\\n    divide.x = object.x + Math.random() * 10\\n    divide.y = object.y + Math.random() * 10\\n    divide.speedX = (Math.random() - .5) * 2\\n    divide.speedY = (Math.random() - .5) * 2\\n  }\\n}","object.color = 'red'\\nobject.x = 400\\nobject.y = 400\\nobject.speedX = 0\\nobject.speedY = 0\\nobject.height = 100\\nobject.width = 100\\nobject.text = 'Move with wasd'\\n\\nobject.onKeyUp = function onKeyUp (key, object) {\\n  if (key == 'a') object.speedX = 0\\n  if (key == 'd') object.speedX = 0\\n  if (key == 's') object.speedY = 0\\n  if (key == 'w') object.speedY = 0\\n}\\n\\nobject.onKeyDown = function onKeyDown (key, object) {\\n  if (key == 'a') object.speedX = -1\\n  if (key == 'd') object.speedX = 1\\n  if (key == 's') object.speedY = 1\\n  if (key == 'w') object.speedY = -1\\n}\\n\\nobject.onCollision = function onCollision (object, otherObject) {\\n  if (!object.lost) {\\n    object.height -= 1\\n    object.width -= 1\\n    otherObject.color = 'orange'\\n    if (object.height <= 0) {\\n      object.lost = true\\n    }\\n  } else {\\n    object.height = 100\\n    object.width = 300\\n    object.x = 350\\n    object.y = 450\\n    object.text = 'YOU LOSE'\\n  }\\n}"]`
+      const pongExample = `["object.color = 'blue'\\nobject.x = 40\\nobject.y = 290\\nobject.speedX = 0\\nobject.speedY = 0\\nobject.height = 300\\nobject.width = 30\\n\\nobject.onKeyUp = function onKeyUp (key, object) {\\n  if (key == 'w') object.speedY = 0\\n  if (key == 's') object.speedY = 0\\n}\\n\\nobject.onKeyDown = function onKeyDown (key, object) {\\n  if (key == 'w') object.speedY = -2\\n  if (key == 's') object.speedY = 2\\n}","object.color = 'red'\\nobject.x = 900\\nobject.y = 300\\nobject.speedX = 0\\nobject.speedY = 0\\nobject.height = 300\\nobject.width = 30\\n\\nobject.onKeyUp = function onKeyUp (key, object) {\\n  if (key == 'o') object.speedY = 0\\n  if (key == 'l') object.speedY = 0\\n}\\n\\nobject.onKeyDown = function onKeyDown (key, object) {\\n  if (key == 'o') object.speedY = -2\\n  if (key == 'l') object.speedY = 2\\n}","object.color = 'green'\\nobject.x = 450\\nobject.y = 400\\nobject.speedX = 2 * Math.sign(Math.random() - .5)\\nobject.speedY = 2 * Math.sign(Math.random() - .5)\\nobject.height = 50\\nobject.width = 50\\nobject.redScore = 0\\nobject.blueScore = 0\\n\\nconst blueScore = createObject(function(object) {\\n  object.color = 'yellow'\\n  object.height = 30\\n  object.width = 30\\n  object.x = 100\\n  object.y = 30\\n  object.text = 0\\n})\\n\\nconst redScore = createObject(function(object) {\\n  object.color = 'yellow'\\n  object.height = 30\\n  object.width = 30\\n  object.x = 800\\n  object.y = 30\\n  object.text = 0\\n})\\n\\nobject.onCollision = function onCollision (object, otherObject) {\\n  if (otherObject.color === 'red' || otherObject.color === 'blue') {\\n    object.speedX *= -1\\n  }\\n}\\n\\nobject.onTick = function onTick(object) {\\n  if (object.x < 0) {\\n    object.x = 450\\n    object.y = 400\\n    redScore.text += 1\\n  }\\n  if (object.x > 970) {\\n    object.x = 450\\n    object.y = 400\\n    blueScore.text += 1\\n  }\\n  if (object.y < 0 || object.y > 970) {\\n    object.speedY *= -1\\n  }\\n}"]`
+      const vibrateExample = `["object.color = 'red'\\nobject.x = 474\\nobject.y = 343\\nobject.speedX = 0\\nobject.speedY = 0\\nobject.height = 100\\nobject.width = 100\\n\\nobject.onTick = function onTick (object) {\\n  object.x += 10 * (Math.random() - 0.5)\\n  object.y += 10 * (Math.random() - 0.5)\\n}"]`
+
+      let gameSize = 1000
+      const scale = px => Math.round(px / (1000 / gameSize))
+      const scalei = px => Math.round(px / (gameSize / 1000))
+      $(resizePanels)
+      $(window).on('resize', resizePanels)
+      function resizePanels () {
+        let height = window.innerHeight
+        let width = window.innerWidth
+        if (width > height && width > 800) {
+          if (width - height <= 270) {
+            height = width - 270
+          }
+          gameSize = height
+          $('#game').css({ height: `${height}px`, width: `${height}px` })
+          $('#controls').css({ height: `${height}px`, width: `${width - height}px` })
+          $('#controls > div').css({ width: '100%' })
+        } else {
+          gameSize = width
+          $('#game').css({ height: `${width}px`, width: `${width}px` })
+          $('#controls').css({ height: `500px`, width: `${width}px` })
+          if (width > 600) {
+            $('#controls > div').css({ width: `${Math.floor(width / 3) - 30}px` })
+          } else {
+            $('#controls > div').css({ width: `${width}px` })
+          }
+        }
+        objects.forEach(object => {
+          updateStyles(object)
+        })
+      }
+
+      const objectHtml = `
+        <div class="object">
+          <div class="text"></div>
+          <div class="delete" style="display:none;">
+            X
+          </div>
+          <div class="editing" style="display:none;">
+            <textarea></textarea>
+          </div>
+        </div>
+      `
+      let objects = []
+      const initialObjects = []
+      const game = $('#game')
+      let interval
+      try {
+        const saved = localStorage.getItem('squares')
+        if (saved) {
+          $('#share-input').val(shareCode)
+          $('#load').trigger('click')
+        }
+      } catch (e) {}
+      $('#multiplier-example').click(() => {
+        $('#share-input').val(multiplyExample)
+        $('#load').trigger('click')
+      })
+      $('#pong-example').click(() => {
+        $('#share-input').val(pongExample)
+        $('#load').trigger('click')
+      })
+      $('#vibrate-example').click(() => {
+        $('#share-input').val(vibrateExample)
+        $('#load').trigger('click')
+      })
+      $('#start').click(() => {
+        for (let i = 0; i < objects.length; ++i) {
+          objects[i].editing = false
+          updateEditing()
+        }
+        interval = setInterval(() => {
+          objects.forEach(object => {
+            object.y += object.speedY
+            object.x += object.speedX
+          })
+          objects.forEach(object => {
+            let collisions = objects.filter((object2, i) => {
+              if (object === object2) return false
+              let tl = { x: object2.x,                 y: object2.y                  }
+              let tr = { x: object2.x + object2.width, y: object2.y                  }
+              let bl = { x: object2.x                , y: object2.y + object2.height }
+              let br = { x: object2.x + object2.width, y: object2.y + object2.height }
+              let points = [ tl, tr, bl, br ]
+              for (let i = 0; i < points.length; ++i) {
+                const point = points[i]
+                if (point.x > object.x && point.x < object.x + object.width &&
+                    point.y > object.y && point.y < object.y + object.height) {
+                  return true
+                }
+              }
+              tl = { x: object.x,                y: object.y                 }
+              tr = { x: object.x + object.width, y: object.y                 }
+              bl = { x: object.x               , y: object.y + object.height }
+              br = { x: object.x + object.width, y: object.y + object.height }
+              points = [ tl, tr, bl, br ]
+              for (let i = 0; i < points.length; ++i) {
+                const point = points[i]
+                if (point.x > object2.x && point.x < object2.x + object2.width &&
+                    point.y > object2.y && point.y < object2.y + object2.height) {
+                  return true
+                }
+              }
+            })
+            collisions.forEach(object2 => {
+              if (object.onCollision) object.onCollision(object, object2)
+            })
+          })
+          objects.forEach(object => {
+            if (object.onTick) object.onTick(object)
+          })
+          objects.forEach(object => {
+            updateStyles(object)
+          })
+        }, 10)
+      })
+      $("#stop").click(() => {
+        clearInterval(interval)
+      })
+      $("#reset").click(() => {
+        clearInterval(interval)
+        const resetObjects = []
+        objects.forEach(object => {
+          object.el.remove()
+          if (object.original) {
+            const resetObject = createObject(eval('(' + object.init.toString() + ')'))
+            resetObject.original = true
+            resetObjects.push(resetObject)
+          }
+        })
+        objects = resetObjects
+      })
+
+      $('#save').on('click', function () {
+        const shareCode = getShareCode()
+        try {
+          localStorage.setItem('squares', shareCode)
+        } catch (e) {}
+        $('#share-input').val(shareCode)
+      })
+      $('#load').on('click', function () {
+        $('#get-started').remove()
+        objects.forEach(object => {
+          object.el.remove()
+        })
+        objects = []
+        const initFuncs = JSON.parse($('#share-input').val())
+        initFuncs.forEach(initFunc => {
+          const newObject = createObject(eval(`(function init (object) {\n${initFunc}\n})`))
+          newObject.original = true
+        })
+        objects.forEach(object => object.original = true)
+      })
+      $(document).on('keydown', e => {
+        objects.forEach(object => {
+          object.onKeyDown(e.key, object)
+        })
+      })
+      $(document).on('keyup', e => {
+        objects.forEach(object => {
+          object.onKeyUp(e.key, object)
+        })
+      })
+      game.click(e => {
+        $('#get-started').remove()
+        for (let i = 0; i < objects.length; ++i) {
+          if (objects[i].editing) {
+            objects[i].editing = false
+            return updateEditing()
+          }
+        }
+        const object = createObject(eval(
+`(function init (object) {
+object.color = 'red'
+object.x = ${scalei(e.offsetX)} // can be from 0 to 1000
+object.y = ${scalei(e.offsetY)} // can be from 0 to 1000
+object.speedX = 0
+object.speedY = 0
+object.height = 100
+object.width = 100
+
+// this is called when a key is pressed on the keyboard
+// key can be 'a', 'b', '1', '2', 'ArrowUp', 'ArrowLeft', 'Tab', etc.
+object.onKeyUp = function (key, object) {
+}
+
+// this is the same as onKeyUp, but is called when the key is released
+object.onKeyDown = function (key, object) {
+}
+
+// this is called when the object overlaps with another object
+object.onCollision = function (object, otherObject) {
+}
+
+// this fires every 10 milliseconds
+object.onTick = function (object) {
+}
+})`))
+        object.original = true
+        object.editing = true
+        updateEditing()
+      })
+      function createObject (init) {
+        let object = {
+          el: $(objectHtml),
+          color: 'red',
+          textColor: 'black',
+          text: '',
+          height: 100,
+          width: 100,
+          startX: 0,
+          startY: 0,
+          x: 0,
+          y: 0,
+          speedX: 0,
+          speedY: 0,
+          editing: false,
+          init: init,
+          onKeyUp: eval('(function onKeyUp (key, object) {\n})'),
+          onKeyDown: eval('(function onKeyDown (key, object) {\n})'),
+          onCollision: eval('(function onCollision (object, otherObject) {\n})'),
+          onTick: eval('(function onTick (object) {\n})')
+        }
+        init(object)
+        updateStyles(object)
+        game.append(object.el)
+        objects.push(object)
+        object.el.click(e => {
+          e.stopPropagation()
+          if (object.editing) return
+          objects.forEach(object => object.editing = false)
+          object.editing = true
+          updateEditing()
+        })
+        object.el.hover(
+          () => object.el.find('.delete').show(),
+          () => object.el.find('.delete').hide()
+        )
+        object.el.find('.delete').on('click', e => {
+          e.stopPropagation()
+          object.el.remove()
+          objects = objects.filter(obj => obj !== object)
+        })
+        object.el.find('textarea').on('keyup', function (e) {
+          const init = $(this).val()
+          const destructure = `
+          (function init (object) {
+${init}
+          })`
+          try {
+            const parsedInit = eval(destructure)
+            object.init = parsedInit
+            object.init(object)
+            updateStyles(object)
+            $(this).css({ border: '4px solid green' })
+          } catch (e) {
+            $(this).css({ border: '4px solid red' })
+            console.log(e)
+          }
+        })
+        return object
+      }
+
+      function updateEditing () {
+        objects.forEach(object => {
+          if (object.editing) {
+            object.el.find('.editing textarea').val(getObjectCode(object))
+            object.el.find('.editing').show()
+            object.el.css({ zIndex: 10 })
+            updateStyles(object)
+          } else {
+            object.el.find('.editing').hide()
+            object.el.css({ zIndex: 1 })
+          }
+        })
+      }
+
+      function updateStyles (object) {
+        const styles = {
+          position: 'absolute',
+          left: `${scale(object.x)}px`,
+          top: `${scale(object.y)}px`,
+          height: `${scale(object.height)}px`,
+          width: `${scale(object.width)}px`,
+          color: object.textColor,
+          backgroundColor: object.color
+        }
+        object.el.css(styles)
+        object.el.find('.text').text(object.text)
+        if (object.editing) {
+          let top = 0
+          let left = 0
+          if (scale(object.y) + 500 > gameSize) {
+            top = 480 - object.y
+          }
+          if (scale(object.x) + 500 > gameSize) {
+            left = 480 - object.x
+          }
+          object.el.find('.editing textarea').css({ top: `${top}px`, left: `${left}px` })
+        }
+      }
+
+      function getObjectCode (object) {
+        return object.init.toString().trim().split('\n').slice(1).slice(0, -1).join('\n')
+      }
+
+      function getShareCode () {
+        return JSON.stringify(objects.filter(object => object.original).map(object => {
+          return getObjectCode(object)
+        }))
+      }
+    </script>
+  </body>
+</html>
