@@ -195,15 +195,15 @@ object.speedX = 1
 object.speedY = 0
 object.height = 100
 object.width = 100
-object.text = "Press start, then press 'a'"
+${objects.length == 0 ? 'object.text = "Press start, then press \'a\'"' : ''}
 
 // this is called when a key is pressed on the keyboard
 // key can be 'a', 'b', '1', '2', 'ArrowUp', 'ArrowLeft', 'Tab', etc.
-object.onKeyUp = function (key, object) {
+object.onKeyUp = function (key, object) {${objects.length === 0 ? `
   if (key == 'a') {
     object.speedX *= -1
   }
-}
+` : ''}}
 
 // this is the same as onKeyUp, but is called when the key is released
 object.onKeyDown = function (key, object) {
