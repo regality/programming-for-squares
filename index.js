@@ -111,7 +111,6 @@ $('#start').click(() => {
     })
     objects.forEach(object => {
       if ((object.x < 0 || object.x + object.width > 1000) && object.onOutOfBoundsX) {
-        console.log(object.x, object.width, object.x + object.width, gameSize)
         object.onOutOfBoundsX(object)
       }
       if ((object.y < 0 || object.y + object.height > 1000) && object.onOutOfBoundsY) {
