@@ -68,6 +68,8 @@ $('#vibrate-example').click(() => {
   $('#load').trigger('click')
 })
 $('#start').click(() => {
+  $('#start').attr('disabled', true)
+  $('#stop').attr('disabled', false)
   for (let i = 0; i < objects.length; ++i) {
     objects[i].editing = false
     updateEditing()
@@ -126,9 +128,13 @@ $('#start').click(() => {
   }, 10)
 })
 $("#stop").click(() => {
+  $('#start').attr('disabled', false)
+  $('#stop').attr('disabled', true)
   clearInterval(interval)
 })
 $("#reset").click(() => {
+  $('#start').attr('disabled', false)
+  $('#stop').attr('disabled', true)
   clearInterval(interval)
   const resetObjects = []
   objects.forEach(object => {
@@ -185,7 +191,7 @@ game.click(e => {
 object.color = 'red'
 object.x = ${scalei(e.offsetX)} // can be from 0 to 1000
 object.y = ${scalei(e.offsetY)} // can be from 0 to 1000
-object.speedX = 0
+object.speedX = 1
 object.speedY = 0
 object.height = 100
 object.width = 100
